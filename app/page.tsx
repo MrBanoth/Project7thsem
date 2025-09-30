@@ -79,10 +79,18 @@ function AppContent() {
         const { latitude, longitude } = position.coords
 
         try {
-          const mockLocation = "400001"
-          setSearchLocation(mockLocation)
+          // Reverse geocode to get a postal code or locality
+          const res = await fetch(
+            `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${latitude}&longitude=${longitude}&localityLanguage=en`
+          )
+          const data = await res.json().catch(() => ({}))
+          const pin = data?.postcode || data?.locality || data?.city || data?.principalSubdivision || ""
+          if (pin) {
+            setSearchLocation(pin)
+          }
+          // For now, use current shops list. You can integrate a real backend query by pin later.
           setFilteredShops(shops)
-          console.log(`[v0] Location obtained: ${latitude}, ${longitude}`)
+          console.log(`[v0] Location obtained: ${latitude}, ${longitude} ->`, pin)
         } catch (error) {
           console.error("[v0] Error getting location details:", error)
           alert("Could not get location details. Please enter manually.")
